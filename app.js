@@ -5,6 +5,7 @@ app.use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-
 const corser = require("corser");//CORSをなんとかするやつ
 const mysql = require("mysql");
 
+
 var MongoClient = require("mongodb").MongoClient;
 var url = "mongodb://localhost:27017/test"; 
 
