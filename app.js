@@ -3,8 +3,6 @@ const express = require("express");
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 const corser = require("corser");//CORSをなんとかするやつ
-const mysql = require("mysql");
-
 
 var MongoClient = require("mongodb").MongoClient;
 var url = "mongodb://localhost:27017/test"; 
