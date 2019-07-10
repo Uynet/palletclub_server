@@ -1,0 +1,8 @@
+type: runtime
+image: runtime/node
+
+startup: npm i
+entrypoint: node app.js
+
+http_proxy: 3001
+use_mongodb: true;
