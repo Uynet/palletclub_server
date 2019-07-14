@@ -41,6 +41,10 @@ build/Release
 node_modules/
 jspm_packages/
 
+# mongo
+db/ 
+mongo_seed/
+
 # TypeScript v1 declaration files
 typings/
 
@@ -87,3 +91,4 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
+# mongoDB
