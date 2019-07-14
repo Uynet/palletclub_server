@@ -1,18 +1,22 @@
 const bodyParser = require('body-parser') // body-parser
 const express = require("express");
 const app = express();
+const f = require('util').format;
 app.use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 const corser = require("corser");//CORSをなんとかするやつ
 
-var MongoClient = require("mongodb").MongoClient;
-var url = "mongodb://localhost:27017/test"; 
+const MongoClient = require("mongodb").MongoClient;
+const authMechanism = 'DEFAULT';
+
+const url = 'mongodb://user:pass@localhost:27017/test';
 
 function findDB(response){
-    MongoClient.connect(url, (error, client) => {
+    MongoClient.connect(url ,(error, client) => {
       if (error) {
         return console.dir(err);
       }
       const db = client.db('test');
+
       db.collection("posts", (err, collection)=> {
         collection.find().toArray((err, docs) => {
           response.send(docs);
@@ -33,21 +37,19 @@ app.get("/api/getPosts",(req,res)=>{
 app.post('/api/newPost', (req, res) => {
   res.setHeader('Content-Type', 'text/plain');
   const data = req.body;
-  const countQuery = 'select count(*) from posts';
-  const selectAllQuery = 'select * from posts;' 
-  const insertQuery = 'insert into posts(id,title,content) values(?,?,?);' ;
   insertPost(data);
 })
 //postをDatabaseにinsert
 function insertPost(data){
-  MongoClient.connect(url, function(err, client) {
+  MongoClient.connect(url, {useNewUrlParser: true}, function(err, client) {
     if (err) throw err;
     const db = client.db("test");
 
     db.collection("posts").insertOne(data , function(err, res) {
       if (err) throw err;
+      console.log("post",data)
     });
-      client.close();
+    client.close();
   });
 }
 
