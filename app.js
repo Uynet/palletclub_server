@@ -2,6 +2,10 @@ const bodyParser = require('body-parser') // body-parser
 const express = require("express");
 const app = express();
 const f = require('util').format;
+
+const DBNAME = "test";
+const COLNAME ="post"; 
+
 app.use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 const corser = require("corser");//CORSをなんとかするやつ
 
@@ -34,11 +38,40 @@ app.get("/",(req,res)=>{
 app.get("/api/getPosts",(req,res)=>{
   findDB(res); 
 })
+app.get("/api/countPosts",(req,res)=>{
+  CountPosts(res); 
+})
 app.post('/api/newPost', (req, res) => {
   res.setHeader('Content-Type', 'text/plain');
   const data = req.body;
   insertPost(data);
 })
+  function CountPosts(response){
+    console.log("COUNT")
+    MongoClient.connect(url, {useNewUrlParser: true}, function(error, client) {
+      if(error)throw error;
+      const db = client.db(DBNAME);
+      db.collection(COLNAME
+        , (error2, collection)=> {
+          if(error2)throw error2;
+          collection.find().count((error3,count) => { 
+            if(error3)throw error3;
+            response.send(""+count);
+          });
+      })
+    });
+  }
+  function removeAll(){
+    return;
+    MongoClient.connect(url, {useNewUrlParser: true}, function(err, client) {
+      console.log("消えます");
+      if (err) throw err;
+      const db = client.db(DBNAME);
+      db.collection(COLNAME).remove({});
+      client.close();
+    });
+  }
+
 //postをDatabaseにinsert
 function insertPost(data){
   MongoClient.connect(url, {useNewUrlParser: true}, function(err, client) {
