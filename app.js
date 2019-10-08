@@ -53,6 +53,15 @@ app.post("/api/deletePost",(req,res)=>{
   const data = req.body;
   deletePost(res,data); 
 })
+
+// 指定したpathで認証
+app.get('/auth/twitter', passport.authenticate('twitter'));
+// callback後の設定
+app.get('/auth/twitter/callback', passport.authenticate('twitter', {failureRedirect: '/login' }), (req, res) => {
+  // res.redirect('/');
+  res.redirect('http://127.0.0.1:3000/');
+});
+
 function deletePost(response,data){
   // ID はpostに振り分けられた番号だが、これをキーにすると他人のポストを削除できるので絶対に避ける必要がある
   // _idで判定すればいいが、なぜかうまくいかん
