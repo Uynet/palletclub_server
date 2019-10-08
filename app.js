@@ -4,7 +4,7 @@ const app = express();
 const f = require('util').format;
 
 const DBNAME = "test";
-const COLNAME ="post"; 
+const COLNAME ="posts"; 
 
 app.use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 const corser = require("corser");//CORSをなんとかするやつ
@@ -15,7 +15,8 @@ const authMechanism = 'DEFAULT';
 const url = 'mongodb://user:pass@localhost:27017/test';
 
 function findDB(response){
-    MongoClient.connect(url ,(error, client) => {
+    MongoClient.connect(url , { useNewUrlParser: true } , (error, client) => {
+      console.log("FIND")
       if (error) {
         return console.dir(err);
       }
@@ -24,6 +25,7 @@ function findDB(response){
       db.collection("posts", (err, collection)=> {
         collection.find().toArray((err, docs) => {
           response.send(docs);
+          console.log(docs)
         });
       })
       client.close(); 
@@ -46,16 +48,35 @@ app.post('/api/newPost', (req, res) => {
   const data = req.body;
   insertPost(data);
 })
+app.post("/api/deletePost",(req,res)=>{
+  res.setHeader('Content-Type', 'text/plain');
+  const data = req.body;
+  deletePost(res,data); 
+})
+function deletePost(response,data){
+  // ID はpostに振り分けられた番号だが、これをキーにすると他人のポストを削除できるので絶対に避ける必要がある
+  // _idで判定すればいいが、なぜかうまくいかん
+  // また、IDは文字列型なので注意
+  console.log("DEL",data.ID)
+  MongoClient.connect(url, {useNewUrlParser: true}, function(err, client) {
+    if (err) throw err;
+    const db = client.db(DBNAME);
+    db.collection(COLNAME).remove({ID:data.ID+""}); 
+    response.send("removed:"+data.ID)//削除に成功しても失敗してもsendする
+    client.close();
+  });
+}
   function CountPosts(response){
     console.log("COUNT")
     MongoClient.connect(url, {useNewUrlParser: true}, function(error, client) {
       if(error)throw error;
-      const db = client.db(DBNAME);
+      const db = client.db("test");
       db.collection(COLNAME
         , (error2, collection)=> {
           if(error2)throw error2;
           collection.find().count((error3,count) => { 
             if(error3)throw error3;
+            console.log(count)
             response.send(""+count);
           });
       })
