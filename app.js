@@ -2,57 +2,78 @@ const bodyParser = require('body-parser') // body-parser
 const express = require("express");
 const app = express();
 const f = require('util').format;
-
-const DBNAME = "test";
-const COLNAME ="posts"; 
-
-app.use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 const corser = require("corser");//CORSをなんとかするやつ
 
-const MongoClient = require("mongodb").MongoClient;
-const authMechanism = 'DEFAULT';
+const DB = require("./src/database"); 
+const database  = new DB(); 
+const config = require("./config.js"); 
 
-const url = 'mongodb://user:pass@localhost:27017/test';
+let accountData;
+//const po = require("./src/auth.js");
+//onst TwitterAuth = new po();
 
-function findDB(response){
-    MongoClient.connect(url , { useNewUrlParser: true } , (error, client) => {
-      console.log("FIND")
-      if (error) {
-        return console.dir(err);
-      }
-      const db = client.db('test');
+const TwitterStrategy = require('passport-twitter'); 
+const passport = require('passport');
+const session = require('express-session');
 
-      db.collection("posts", (err, collection)=> {
-        collection.find().toArray((err, docs) => {
-          response.send(docs);
-          console.log(docs)
-        });
-      })
-      client.close(); 
-    }); 
-}
 
+ 
+app.use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 app.use(corser.create());
+// セッションの設定
+app.use(session({
+  secret: 'secret-key',
+  resave: true,
+  saveUninitialized: true
+}));
+ 
+app.use(passport.initialize());
+app.use(passport.session());
+// 認証の設定
+passport.use(new TwitterStrategy({
+  consumerKey: config.consumerKey,
+  consumerSecret: config.consumerSecret,
+  callbackURL: config.callbackURL
+},
 
-app.get("/",(req,res)=>{
-  res.send("hello this is serverside.");
+  // 認証後のアクション
+(accessToken, refreshToken, profile, callback) => {
+    process.nextTick(() => {
+        accountData = profile._json;
+        console.log(accountData);
+        return callback(null, profile);
+    });
+}));
+// セッションへの保存と読み出し
+passport.serializeUser((user, callback) => { callback(null, user); });
+passport.deserializeUser((obj, callback) => { callback(null, obj); });
+
+
+/* DB関連 */ 
+app.get("/",(req,res)=>{ res.send("hello this is serverside."); })
+app.get("/api/countPosts",(req,res)=>{ database.CountPosts(res); })
+app.post("/api/removeAll ",(req,res)=>{ database.removeAll(); })
+app.post("/api/deletePost",(req,res)=>{ 
+  res.setHeader('Content-Type', 'text/plain');
+  const data = req.body;
+  database.deletePost(res,data);
 })
 app.get("/api/getPosts",(req,res)=>{
-  findDB(res); 
-})
-app.get("/api/countPosts",(req,res)=>{
-  CountPosts(res); 
+  database.find(res);
+  //database.removeAll(); 
 })
 app.post('/api/newPost', (req, res) => {
   res.setHeader('Content-Type', 'text/plain');
   const data = req.body;
-  insertPost(data);
+  database.insertData(data); 
 })
-app.post("/api/deletePost",(req,res)=>{
-  res.setHeader('Content-Type', 'text/plain');
-  const data = req.body;
-  deletePost(res,data); 
-})
+
+//AUTH
+/*
+app.get('/auth/twitter', (req,res)=>{ TwitterAuth.auth(res); }) 
+app.get('/auth/twitter/callback', (req,res)=>{ TwitterAuth.callback(res) });
+*/
+
 
 // 指定したpathで認証
 app.get('/auth/twitter', passport.authenticate('twitter'));
@@ -62,58 +83,6 @@ app.get('/auth/twitter/callback', passport.authenticate('twitter', {failureRedir
   res.redirect('http://127.0.0.1:3000/');
 });
 
-function deletePost(response,data){
-  // ID はpostに振り分けられた番号だが、これをキーにすると他人のポストを削除できるので絶対に避ける必要がある
-  // _idで判定すればいいが、なぜかうまくいかん
-  // また、IDは文字列型なので注意
-  console.log("DEL",data.ID)
-  MongoClient.connect(url, {useNewUrlParser: true}, function(err, client) {
-    if (err) throw err;
-    const db = client.db(DBNAME);
-    db.collection(COLNAME).remove({ID:data.ID+""}); 
-    response.send("removed:"+data.ID)//削除に成功しても失敗してもsendする
-    client.close();
-  });
-}
-  function CountPosts(response){
-    console.log("COUNT")
-    MongoClient.connect(url, {useNewUrlParser: true}, function(error, client) {
-      if(error)throw error;
-      const db = client.db("test");
-      db.collection(COLNAME
-        , (error2, collection)=> {
-          if(error2)throw error2;
-          collection.find().count((error3,count) => { 
-            if(error3)throw error3;
-            console.log(count)
-            response.send(""+count);
-          });
-      })
-    });
-  }
-  function removeAll(){
-    return;
-    MongoClient.connect(url, {useNewUrlParser: true}, function(err, client) {
-      console.log("消えます");
-      if (err) throw err;
-      const db = client.db(DBNAME);
-      db.collection(COLNAME).remove({});
-      client.close();
-    });
-  }
-
-//postをDatabaseにinsert
-function insertPost(data){
-  MongoClient.connect(url, {useNewUrlParser: true}, function(err, client) {
-    if (err) throw err;
-    const db = client.db("test");
-
-    db.collection("posts").insertOne(data , function(err, res) {
-      if (err) throw err;
-      console.log("post",data)
-    });
-    client.close();
-  });
-}
-
 app.listen(3001);
+
+
