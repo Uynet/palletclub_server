@@ -1,7 +1,6 @@
 const MongoClient = require("mongodb").MongoClient;
 
 const DBNAME = "palletclub";
-const COLNAME = "posts";
 const USERNAME = "admin";
 const PASS = "pass";
 const url = 'mongodb://'+USERNAME+':'+PASS+'@localhost:27017/'+DBNAME;
@@ -54,69 +53,69 @@ const testdata = [
 module.exports = class{
   constructor(){
   }
-  find(response){
+  find(collection,callback,query){
     this.insertTestDate()
     MongoClient.connect(url ,(error, client) => {
       if (error) return console.dir(error); 
       const db = client.db(DBNAME);
 
-      db.collection(COLNAME, (err, collection)=> {
-        collection.find().toArray((err, docs) => {
-          response.send(docs);
-          // console.log(docs);
+      db.collection(collection, (err, collection)=> {
+        collection.find(query).toArray((err, docs) => {
+          callback(docs);
         });
       })
+
       client.close();
     });
   }
-  CountPosts(response){
+  CountPosts(collection,callback,query){
     MongoClient.connect(url, {useNewUrlParser: true}, function(err, client) {
       const db = client.db(DBNAME
       );
-      db.collection(COLNAME, (err, collection)=> {
-        collection.find().count((err,count) => { 
+      db.collection(collection , (err, collection)=> {
+        collection.find(query).count((err,count) => { 
           if(err)throw err;
-          response.send(""+count);
+          callback(""+count);
         });
       })
     });
   }
-  deletePost(response,data){
+  deletePost(collection,callback,data){
     MongoClient.connect(url, {useNewUrlParser: true}, function(err, client) {
       if (err) throw err;
       const db = client.db(DBNAME
       );
-      db.collection(COLNAME).remove({ID:data.ID+""});
-      response.send("removed:"+data.ID)
+      db.collection(collection).remove({ID:data.ID+""});
+      callback("removed:"+data.ID)
       client.close();
     });
   }
-  removeAll(){
+  removeAll(collection){
     MongoClient.connect(url, {useNewUrlParser: true}, function(err, client) {
       console.log("消えます");
       if (err) throw err;
       const db = client.db(DBNAME);
-      db.collection(COLNAME).remove({});
+      db.collection(collection).remove({});
       client.close();
     });
   }
-  insertData(data){
+  insertData(collection,data){
     MongoClient.connect(url, {useNewUrlParser: true}, function(err, client) {
       if (err) throw err;
       const db = client.db(DBNAME);
 
-
-      db.collection(COLNAME).insertOne(data , function(err, res) {
+      db.collection(collection).insertOne(data , function(err, res) {
         if (err) throw err;
         // console.log("post",data)
       });
       client.close();
     });
   }
-  count(response){
+
+  count(collection,response){
     MongoClient.connect(url, {useNewUrlParser: true}, function(err, client) {
       const db = client.db(DBNAME);
-      db.collection(COLNAME, (err, collection)=> {
+      db.collection(collection, (err, collection)=> {
         collection.find().count((err,cnt) => { 
           if(err)throw err;
           return cnt;
@@ -130,7 +129,7 @@ module.exports = class{
     const l = testdata.length;
     testdata.forEach(data=>{
       data.ID = i
-      //this.insertData(data)
+      //this.insertData("posts",data)
       i++;
     })
     //this.removeAll(); 
