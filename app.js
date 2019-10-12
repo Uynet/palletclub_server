@@ -38,9 +38,20 @@ passport.use(new TwitterStrategy({
   // 認証後のアクション
   (accessToken, refreshToken, profile, callback) => {
     process.nextTick(() => {
-      const {id ,name,screen_name}= profile._json;
-      const accountData = {id:id,name:name,screen_name:screen_name}
-      // console.log(accountData);
+      const {
+        id,
+        name,
+        screen_name,
+        profile_image_url
+      } = profile._json;
+
+      const accountData = {
+        id:id,//これはtwitterのIDではない
+        name:name,//ユーザー名
+        screen_name:screen_name, //twitterID
+        accessToken:accessToken, 
+        profile_image_url:profile_image_url //アイコン画像
+      }
 
       const f = (cnt)=>{
         // console.log("cnt:",cnt)
@@ -78,6 +89,10 @@ app.post('/api/newPost', (req, res) => {
   database.insertData(colpost,data); 
 })
 
+app.post("/api/getUserData",(req,res)=>{
+  database.find("users",c=>res.send(c),{screen_name:req.body.screen_name});
+})
+
 // 指定したpathで認証
 app.get('/auth/twitter', 
   passport.authenticate('twitter'),
@@ -85,9 +100,12 @@ app.get('/auth/twitter',
 
 // callback後の設定
 app.get('/auth/twitter/callback', passport.authenticate('twitter', {failureRedirect: '/login' }), (req, res) => {
-  const userdata = req.user;
-  const {screen_name} = req.user
-  res.redirect('http://127.0.0.1:3000/'+'user/'+screen_name);
+  const {
+    screen_name,
+    accessToken
+  } = req.user
+  const cliantURL ="http://127.0.0.1:3000/" 
+  res.redirect(cliantURL+"user/"+screen_name+"?accessToken="+accessToken);
 });
 
 app.listen(3001);
