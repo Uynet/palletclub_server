@@ -44,13 +44,14 @@ passport.use(new TwitterStrategy({
         screen_name,
         profile_image_url
       } = profile._json;
+      console.log(profile_image_url.replace("_normal",""))//こうしないと解像度が低くてボケる
 
       const accountData = {
         id:id,//これはtwitterのIDではない
         name:name,//ユーザー名
         screen_name:screen_name, //twitterID
         accessToken:accessToken, 
-        profile_image_url:profile_image_url //アイコン画像
+        profile_image_url:profile_image_url.replace("_normal","")//こうしないと解像度が低くてボケる
       }
 
       const f = (cnt)=>{
@@ -86,11 +87,22 @@ app.get("/api/getPosts",(req,res)=>{
 app.post('/api/newPost', (req, res) => {
   res.setHeader('Content-Type', 'text/plain');
   const data = req.body;
-  database.insertData(colpost,data); 
+  const callback  = (d)=>{
+    console.log("posted:",d)
+    res.send(d)
+  }
+  database.insertData(colpost,data,callback); 
 })
 
 app.post("/api/getUserData",(req,res)=>{
+  // 特定のscreen_nameを持つuserdataを返す
+  // 要素が1または0の配列になるのでよしなに
   database.find("users",c=>res.send(c),{screen_name:req.body.screen_name});
+})
+//アクセストークンに対応するuserを返す
+app.post("/api/checkAccessToken",(req,res)=>{
+  console.log(req.body.accessToken)
+  database.find("users",c=>res.send(c),{accessToken:req.body.accessToken});
 })
 
 // 指定したpathで認証
