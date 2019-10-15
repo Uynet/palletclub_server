@@ -42,7 +42,9 @@ passport.use(new TwitterStrategy({
         id,
         name,
         screen_name,
-        profile_image_url
+        profile_image_url,
+        description,
+        url
       } = profile._json;
       console.log(profile_image_url.replace("_normal",""))//こうしないと解像度が低くてボケる
 
@@ -51,6 +53,8 @@ passport.use(new TwitterStrategy({
         name:name,//ユーザー名
         screen_name:screen_name, //twitterID
         accessToken:accessToken, 
+        description,
+        url
         profile_image_url:profile_image_url.replace("_normal","")//こうしないと解像度が低くてボケる
       }
 
@@ -58,12 +62,15 @@ passport.use(new TwitterStrategy({
         // console.log("cnt:",cnt)
         if(cnt==="0"){
           console.log("new user created:",screen_name);
-          database.insertData("users",accountData);
+          database.insert("users", accountData,()=>{});
         }
-        else console.log("account is aleady exist:",screen_name);
+        else {
+          console.log("account is aleady exist:",screen_name);
+          database.update("users", accountData,()=>{});
+        }
         return callback(null, accountData);
       }
-      database.CountPosts("users",f,{screen_name:screen_name});
+      database.CountPosts("users",{screen_name:screen_name},f);
     });
   }));
 // セッションへの保存と読み出し
@@ -73,36 +80,34 @@ passport.deserializeUser((obj, callback) => { callback(null, obj); });
 
 /* DB関連 */ 
 app.get("/",(req,res)=>{ res.send("hello this is serverside."); })
-app.get("/api/countPosts",(req,res)=>{ database.CountPosts(colpost,c=>res.send(c)); })
-app.post("/api/removeAll ",(req,res)=>{ database.removeAll(colpost); })
+app.get("/api/countPosts",(req,res)=>{ database.CountPosts(colpost,{},c=>res.send(c)); })
 app.post("/api/deletePost",(req,res)=>{ 
   res.setHeader('Content-Type', 'text/plain');
   const data = req.body;
-  database.deletePost(colpost,c=>res.send(c),data);
+  database.deletePost(colpost,data,c=>res.send(c));
 })
 app.get("/api/getPosts",(req,res)=>{
-  database.find(colpost,c=>res.send(c));
+  database.find(colpost,{},c=>res.send(c));
   //database.removeAll(); 
 })
 app.post('/api/newPost', (req, res) => {
   res.setHeader('Content-Type', 'text/plain');
   const data = req.body;
-  const callback  = (d)=>{
+  const callback = (d)=>{
     console.log("posted:",d)
     res.send(d)
   }
-  database.insertData(colpost,data,callback); 
+  database.insert(colpost,data,callback); 
 })
-
 app.post("/api/getUserData",(req,res)=>{
   // 特定のscreen_nameを持つuserdataを返す
   // 要素が1または0の配列になるのでよしなに
-  database.find("users",c=>res.send(c),{screen_name:req.body.screen_name});
+  database.find("users",{screen_name:req.body.screen_name},c=>res.send(c));
 })
 //アクセストークンに対応するuserを返す
 app.post("/api/checkAccessToken",(req,res)=>{
   console.log(req.body.accessToken)
-  database.find("users",c=>res.send(c),{accessToken:req.body.accessToken});
+  database.find("users",{accessToken:req.body.accessToken},c=>res.send(c));
 })
 
 // 指定したpathで認証
@@ -117,7 +122,7 @@ app.get('/auth/twitter/callback', passport.authenticate('twitter', {failureRedir
     accessToken
   } = req.user
   const cliantURL ="http://127.0.0.1:3000/" 
-  res.redirect(cliantURL+"user/"+screen_name+"?accessToken="+accessToken);
+  res.redirect(cliantURL+"login/"+screen_name+"?accessToken="+accessToken);
 });
 
 app.listen(3001);
