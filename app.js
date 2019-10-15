@@ -62,12 +62,12 @@ passport.use(new TwitterStrategy({
         // console.log("cnt:",cnt)
         if(cnt==="0"){
           console.log("new user created:",screen_name);
-          database.insertOne("users", accountData,()=>{});
+          database.insert("users", accountData,()=>{});
         }
         else {
           console.log("account is aleady exist:",screen_name);
           const query = {screen_name:screen_name}
-          database.update("users", query , {accountData:accountData} ,()=>{});
+          database.update("users", query , accountData ,()=>{});
         }
         return callback(null, accountData);
       }
