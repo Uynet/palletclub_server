@@ -101,12 +101,12 @@ module.exports = class{
       client.close();
     });
   }
-  update(collection,data,callback){
+  update(collection,query,data,callback){
     MongoClient.connect(url, {useNewUrlParser: true}, function(err, client) {
       if (err) throw err;
       const db = client.db(DATABASE);
 
-      db.collection(collection).update(data , function(err, res) {
+      db.collection(collection).updateOne(query ,{$set: data  } , function(err, res) {
         if (err) throw err; 
         callback(data)
       });

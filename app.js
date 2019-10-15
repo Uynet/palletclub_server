@@ -54,7 +54,7 @@ passport.use(new TwitterStrategy({
         screen_name:screen_name, //twitterID
         accessToken:accessToken, 
         description,
-        url
+        url,
         profile_image_url:profile_image_url.replace("_normal","")//こうしないと解像度が低くてボケる
       }
 
@@ -62,11 +62,12 @@ passport.use(new TwitterStrategy({
         // console.log("cnt:",cnt)
         if(cnt==="0"){
           console.log("new user created:",screen_name);
-          database.insert("users", accountData,()=>{});
+          database.insertOne("users", accountData,()=>{});
         }
         else {
           console.log("account is aleady exist:",screen_name);
-          database.update("users", accountData,()=>{});
+          const query = {screen_name:screen_name}
+          database.update("users", query , {accountData:accountData} ,()=>{});
         }
         return callback(null, accountData);
       }
