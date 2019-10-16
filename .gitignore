@@ -92,3 +92,5 @@ typings/
 .dynamodb/
 
 # mongoDB
+
+config.js

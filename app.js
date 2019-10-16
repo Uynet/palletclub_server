@@ -46,7 +46,6 @@ passport.use(new TwitterStrategy({
         description,
         url
       } = profile._json;
-      console.log(profile_image_url.replace("_normal",""))//こうしないと解像度が低くてボケる
 
       const accountData = {
         id:id,//これはtwitterのIDではない
@@ -59,7 +58,6 @@ passport.use(new TwitterStrategy({
       }
 
       const f = (cnt)=>{
-        // console.log("cnt:",cnt)
         if(cnt==="0"){
           console.log("new user created:",screen_name);
           database.insert("users", accountData,()=>{});
