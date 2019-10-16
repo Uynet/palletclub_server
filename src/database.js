@@ -142,22 +142,25 @@ module.exports = class {
     let i = 0;
     const l = testdata.length;
 
+    // const iterator = testdata.values;
+
     const self = this;
-    (function callback(d){
-      i++
+    function callback(d){
       if (i < l) {
         const data = testdata[i];
         console.log(data)
         data.date = new Date();
         data.description =
           "色の説明です。このように、色の説明では色の説明を書くことができ、また読む人は色の説明を視覚することによって読むことができます。";
-        data.ID = i;
+        data.ID = i++;
+        data.userID="uynet";
         self.insert("posts", data, callback);
         console.log("testdata Inserted;", data);
       } else {
-        console.log("テストデータ挿入完了;",i);
+        console.log("テストデータ挿入完了;");
         return;
       }
-    })();
+    }
+    this.removeAll("posts",callback)
   }
 };
