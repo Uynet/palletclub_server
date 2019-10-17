@@ -81,12 +81,12 @@ module.exports = class {
       client.close();
     });
   }
-  deletePost(collection, data, callback) {
+  remove(collection, query, callback) {
     MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
       if (err) throw err;
       const db = client.db(DATABASE);
-      db.collection(collection).remove({ ID: data.ID + "" });
-      callback("removed:" + data.ID);
+      db.collection(collection).remove(query);
+      callback("removed:");
       client.close();
     });
   }

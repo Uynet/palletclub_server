@@ -102,15 +102,34 @@ app.post("/api/onLike", (req, res) => {
   // 重複しないように注意
   console.log("likeduser:", data.screen_name);
   console.log("post:", data.postID);
-  database.insert(
+
+  database.CountPosts(
     "userLikedList",
-    {
-      screen_name: data.screen_name,
-      postID: data.postID,
-      date: new Date()
-    },
-    c => res.send(c)
+    { screen_name: data.screen_name, postID: data.postID },
+    cnt => f(cnt)
   );
+
+  // いいねのtoggle
+  const f = cnt => {
+    const isLiked = cnt == 1;
+    if (!isLiked) {
+      console.log("ONLIKE:", cnt);
+      database.insert(
+        "userLikedList",
+        {
+          screen_name: data.screen_name,
+          postID: data.postID,
+          date: new Date()
+        },
+        c => res.send(c)
+      );
+    } else {
+      console.log("UNLIKE");
+      database.remove("userLikedList", { postID: data.postID }, c =>
+        res.send(c)
+      );
+    }
+  };
 });
 app.post("/api/deletePost", (req, res) => {
   res.setHeader("Content-Type", "text/plain");
@@ -119,7 +138,15 @@ app.post("/api/deletePost", (req, res) => {
 });
 app.post("/api/getLikeCount", (req, res) => {
   const postID = req.body.postID;
-  database.CountPosts("userLikedList", { postID: postID }, c => res.send(c));
+  const screen_name = req.body.screen_name;
+
+  database.CountPosts("userLikedList", { postID: postID }, cnt => {
+    database.CountPosts(
+      "userLikedList",
+      { screen_name: screen_name, postID: postID },
+      c => res.send({ cnt: cnt, isLiked: c == 1 })
+    );
+  });
 });
 app.get("/api/getPosts", (req, res) => {
   database.find(colpost, selectAll, c => res.send(c));
