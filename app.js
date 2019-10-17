@@ -98,15 +98,15 @@ app.get("/api/countPosts", (req, res) => {
 });
 app.post("/api/onLike", (req, res) => {
   const data = req.body;
-  // ユーザーといいねした投稿を紐づける
+  // ユーザーIDといいねした投稿のIDを紐づける
   // 重複しないように注意
   console.log("likeduser:", data.screen_name);
   console.log("post:", data.postID);
   database.insert(
     "userLikedList",
     {
-      userData: data.screen_name,
-      post: data.postID,
+      screen_name: data.screen_name,
+      postID: data.postID,
       date: new Date()
     },
     c => res.send(c)
@@ -116,6 +116,10 @@ app.post("/api/deletePost", (req, res) => {
   res.setHeader("Content-Type", "text/plain");
   const data = req.body;
   database.deletePost(colpost, data, c => res.send(c));
+});
+app.post("/api/getLikeCount", (req, res) => {
+  const postID = req.body.postID;
+  database.CountPosts("userLikedList", { postID: postID }, c => res.send(c));
 });
 app.get("/api/getPosts", (req, res) => {
   database.find(colpost, selectAll, c => res.send(c));

@@ -78,6 +78,7 @@ module.exports = class {
           callback("" + count);
         });
       });
+      client.close();
     });
   }
   deletePost(collection, data, callback) {
@@ -126,17 +127,6 @@ module.exports = class {
       client.close();
     });
   }
-  count(collection, response) {
-    MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
-      const db = client.db(DATABASE);
-      db.collection(collection, (err, collection) => {
-        collection.find().count((err, cnt) => {
-          if (err) throw err;
-          return cnt;
-        });
-      });
-    });
-  }
 
   insertTestData() {
     let i = 0;
@@ -145,15 +135,15 @@ module.exports = class {
     // const iterator = testdata.values;
 
     const self = this;
-    function callback(d){
+    function callback(d) {
       if (i < l) {
         const data = testdata[i];
-        console.log(data)
+        console.log(data);
         data.date = new Date();
         data.description =
           "色の説明です。このように、色の説明では色の説明を書くことができ、また読む人は色の説明を視覚することによって読むことができます。";
         data.ID = i++;
-        data.userID="uynet";
+        data.userID = "uynet";
         self.insert("posts", data, callback);
         console.log("testdata Inserted;", data);
       } else {
@@ -161,6 +151,6 @@ module.exports = class {
         return;
       }
     }
-    this.removeAll("posts",callback)
+    this.removeAll("posts", callback);
   }
 };
