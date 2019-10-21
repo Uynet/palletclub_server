@@ -56,12 +56,14 @@ const testdata = [
 module.exports = class {
   constructor() {}
   find(collection, query, callback) {
-    MongoClient.connect(url, (error, client) => {
+    MongoClient.connect(url, { useNewUrlParser: true }, (error, client) => {
       if (error) return console.dir(error);
       const db = client.db(DATABASE);
 
       db.collection(collection, (err, collection) => {
+        if (err) throw err;
         collection.find(query).toArray((err, docs) => {
+          if (err) throw err;
           callback(docs);
         });
       });

@@ -89,13 +89,35 @@ passport.deserializeUser((obj, callback) => {
 function like(userData, post, callback) {}
 
 /* DB関連 */
-
 app.get("/", (req, res) => {
   res.send("hello this is serverside.");
 });
+
+//全投稿数をカウントする
+//新しい投稿のIDを決めるのに使う
 app.get("/api/countPosts", (req, res) => {
   database.CountPosts(colpost, selectAll, c => res.send(c));
 });
+
+//あるuserがlikeしたPosts一覧を取得
+app.post("/api/getLikedPosts", (req, res) => {
+  const screen_name = req.body.screen_name;
+
+  database.find(
+    "userLikedList",
+    { screen_name: screen_name },
+    likedPostInfos => {
+      const query = likedPostInfos.map(info => {
+        return { ID: parseInt(info.postID) };
+      });
+      database.find(colpost, { $or: query }, likedPosts => {
+        res.send(likedPosts);
+      });
+    }
+  );
+});
+
+/// いいねボタンを押した時にいいねをtoggleする
 app.post("/api/onLike", (req, res) => {
   const data = req.body;
   // ユーザーIDといいねした投稿のIDを紐づける
@@ -131,11 +153,16 @@ app.post("/api/onLike", (req, res) => {
     }
   };
 });
+
+//指定したqueryの投稿を削除
 app.post("/api/deletePost", (req, res) => {
   res.setHeader("Content-Type", "text/plain");
   const data = req.body;
   database.deletePost(colpost, data, c => res.send(c));
 });
+
+//あるpostのいいね数を取得
+//ついでに「ユーザーがこの投稿をいいねしているか」も取得(よくない)
 app.post("/api/getLikeCount", (req, res) => {
   const postID = req.body.postID;
   const screen_name = req.body.screen_name;
@@ -148,6 +175,8 @@ app.post("/api/getLikeCount", (req, res) => {
     );
   });
 });
+
+//全ての投稿をget
 app.get("/api/getPosts", (req, res) => {
   database.find(colpost, selectAll, c => res.send(c));
 });
@@ -160,13 +189,15 @@ app.post("/api/newPost", (req, res) => {
   };
   database.insert(colpost, data, callback);
 });
+
+// 特定のscreen_nameを持つuserdataを返す
+// 要素が1または0の配列になるのでよしなに
 app.post("/api/getUserData", (req, res) => {
-  // 特定のscreen_nameを持つuserdataを返す
-  // 要素が1または0の配列になるのでよしなに
   database.find("users", { screen_name: req.body.screen_name }, c =>
     res.send(c)
   );
 });
+
 //アクセストークンに対応するuserを返す
 app.post("/api/checkAccessToken", (req, res) => {
   console.log(req.body.accessToken);
