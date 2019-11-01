@@ -1,4 +1,5 @@
-const MongoClient = require("mongodb").MongoClient;
+
+import {MongoClient} from "mongodb"
 
 const DATABASE = "palletclub";
 const USERNAME = "admin";
@@ -6,7 +7,17 @@ const PASS = "pass";
 const url =
   "mongodb://" + USERNAME + ":" + PASS + "@localhost:27017/" + DATABASE;
 
-const testdata = [
+interface Post{
+    name:string;
+    colors:string;
+    date? :Date;
+    description? : string;
+    ID? : Number;
+    userID? :string;
+}
+
+
+const testdata : Post[] = [
   {
     name: "アセロラ",
     colors: "#952060,#e02070,#e0c090,#60b0b0"
@@ -53,7 +64,7 @@ const testdata = [
   }
 ];
 
-module.exports = class {
+export default class Database {
   constructor() {}
   find(collection, query, callback) {
     MongoClient.connect(url, { useNewUrlParser: true }, (error, client) => {
@@ -155,7 +166,6 @@ module.exports = class {
     }
     this.removeAll("posts", callback);
   }
-
 
   findAsync(collection, query) {
     return new Promise( (resolve,reject) => {
