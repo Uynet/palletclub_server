@@ -110,7 +110,8 @@ app.post("/api/getLikedPosts", (req, res) => {
       const query = likedPostInfos.map(info => {
         return { ID: parseInt(info.postID) };
       });
-      database.find(colpost, { $or: query }, likedPosts => {
+      const conds = (query.length > 0 ) ? { $or: query } : {}
+      database.find(colpost, conds , likedPosts => {
         res.send(likedPosts);
       });
     }
