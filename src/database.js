@@ -155,4 +155,95 @@ module.exports = class {
     }
     this.removeAll("posts", callback);
   }
+
+
+  findAsync(collection, query) {
+    return new Promise( (resolve,reject) => {
+      MongoClient.connect(url, { useNewUrlParser: true }, (error, client) => {
+        if (error) return console.dir(error);
+        const db = client.db(DATABASE);
+        db.collection(collection, (err, collection) => {
+          if (err) reject(err);
+          collection.find(query).toArray((err, docs) => {
+            if (err) reject(err);
+            resolve(docs);
+          });
+        });
+        client.close();
+      });
+    })
+  }
+  removeAsync(collection, query) {
+    return new Promise( (resolve,reject) => {
+      MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
+        if (err) reject(err);
+        const db = client.db(DATABASE);
+        db.collection(collection).remove(query);
+        resolve();
+        client.close();
+      });
+    })
+  }
+  removeAllAsync(collection) {
+    return new Promise( (resolve,reject) => {
+      MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
+        console.log("DELETE ALL");
+        if (err) reject(err);
+        const db = client.db(DATABASE);
+        db.collection(collection).remove({});
+        resolve();
+        client.close();
+      });
+    })
+  }
+  updateAsync(collection, query, data) {
+    return new Promise( (resolve,reject) => {
+      MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
+        if (err) throw err;
+        const db = client.db(DATABASE);
+
+        db.collection(collection).updateOne(query, { $set: data }, function(
+          err,
+          res
+        ) {
+          if (err) reject(err);
+          resolve(data);
+        });
+        client.close();
+      });
+    })
+  }
+
+  insertAsync(collection, data) {
+    return new Promise( (resolve,reject) => {
+      MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
+        if (err) throw err;
+        const db = client.db(DATABASE);
+
+        db.collection(collection).insertOne(data, function(err, res) {
+          if (err) reject(err);
+          resolve(data);
+        });
+        client.close();
+      });
+    })
+  }
+
+  countPostsAsync(collection, query){
+    return new Promise( (resolve,reject) => {
+      MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
+        if (err) reject(err);
+        const db = client.db(DATABASE);
+        db.collection(collection, (err, collection) => {
+          if (err) reject(err);
+          collection.find(query).count((err, count) => {
+            if (err) reject(err);
+            resolve(count);
+          });
+        });
+        client.close();
+      });
+    })
+  }
+
 };
