@@ -216,9 +216,8 @@ app.get(
   passport.authenticate("twitter", { failureRedirect: "/login" }),
   (req, res) => {
     const { screen_name, accessToken } = req.user;
-    const cliantURL = "http://127.0.0.1:3000/";
     res.redirect(
-      cliantURL + "login/" + screen_name + "?accessToken=" + accessToken
+      config.clientURL + "login/" + screen_name + "?accessToken=" + accessToken
     );
   }
 );

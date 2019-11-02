@@ -8,3 +8,4 @@ sudo mongod --dbpath=/data
   いま/dataだけどこれ以外を指定して起動するとローカルではしぬ
   ちゃんとdockerにしたいね
 
+
