@@ -1,0 +1,10 @@
+const config = {
+    consumerKey: "PLEASEINSERTTWITTERKEY",
+    consumerSecret: "PLEASEINSERTTWITTERKEY", 
+    callbackURL: "http://example.com/twitter/callback",
+    clientURL:"http://example.com/"
+  }
+  module.exports=config
+  
+  
+  

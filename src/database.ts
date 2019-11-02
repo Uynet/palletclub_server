@@ -1,5 +1,6 @@
 
 import {MongoClient} from "mongodb"
+import { OperationCanceledException } from "typescript";
 
 const DATABASE = "palletclub";
 const USERNAME = "admin";
@@ -254,6 +255,10 @@ export default class Database {
         client.close();
       });
     })
+  }
+
+  deletePost(...args){
+      throw new Error("not implemented")
   }
 
 };

@@ -4,13 +4,13 @@ const app = express();
 const f = require("util").format;
 const corser = require("corser"); //CORSをなんとかするやつ
 
-const DB = require("./src/database");
-const database = new DB();
-const config = require("./config.js");
+import Database from "./src/database"; 
+const database = new Database();
+const config = require("./config.js"); 
 
 const TwitterStrategy = require("passport-twitter");
 const passport = require("passport");
-const session = require("express-session");
+const session = require("express-session"); 
 
 const colpost = "posts";
 
