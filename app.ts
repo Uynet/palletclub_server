@@ -4,13 +4,13 @@ const app = express();
 const f = require("util").format;
 const corser = require("corser"); //CORSをなんとかするやつ
 
-import Database from "./src/database"; 
+import Database from "./src/database";
 const database = new Database();
-const config = require("./config.js"); 
+const config = require("./config.js");
 
 const TwitterStrategy = require("passport-twitter");
 const passport = require("passport");
-const session = require("express-session"); 
+const session = require("express-session");
 
 const colpost = "posts";
 
@@ -110,8 +110,8 @@ app.post("/api/getLikedPosts", (req, res) => {
       const query = likedPostInfos.map(info => {
         return { ID: parseInt(info.postID) };
       });
-      const conds = (query.length > 0 ) ? { $or: query } : {}
-      database.find(colpost, conds , likedPosts => {
+      const conds = query.length > 0 ? { $or: query } : {};
+      database.find(colpost, conds, likedPosts => {
         res.send(likedPosts);
       });
     }
@@ -184,11 +184,14 @@ app.get("/api/getPosts", (req, res) => {
 app.post("/api/newPost", (req, res) => {
   res.setHeader("Content-Type", "text/plain");
   const data = req.body;
-  const callback = d => {
-    console.log("posted:", d);
-    res.send(d);
-  };
-  database.insert(colpost, data, callback);
+  database.CountPosts("posts", {}, cnt => {
+    data.ID = cnt;
+    const callback = d => {
+      console.log("posted ID:", d);
+      res.send(d);
+    };
+    database.insert(colpost, data, callback);
+  });
 });
 
 // 特定のscreen_nameを持つuserdataを返す

@@ -1,6 +1,5 @@
-
-import {MongoClient} from "mongodb"
-import { OperationCanceledException } from "typescript";
+import { MongoClient } from "mongodb";
+import { OperationCanceledException, isReturnStatement } from "typescript";
 
 const DATABASE = "palletclub";
 const USERNAME = "admin";
@@ -8,17 +7,16 @@ const PASS = "pass";
 const url =
   "mongodb://" + USERNAME + ":" + PASS + "@localhost:27017/" + DATABASE;
 
-interface Post{
-    name:string;
-    colors:string;
-    date? :Date;
-    description? : string;
-    ID? : Number;
-    userID? :string;
+interface Post {
+  name: string;
+  colors: string;
+  date?: Date;
+  description?: string;
+  ID?: Number;
+  userID?: string;
 }
 
-
-const testdata : Post[] = [
+const testdata: Post[] = [
   {
     name: "アセロラ",
     colors: "#952060,#e02070,#e0c090,#60b0b0"
@@ -169,7 +167,7 @@ export default class Database {
   }
 
   findAsync(collection, query) {
-    return new Promise( (resolve,reject) => {
+    return new Promise((resolve, reject) => {
       MongoClient.connect(url, { useNewUrlParser: true }, (error, client) => {
         if (error) return console.dir(error);
         const db = client.db(DATABASE);
@@ -182,22 +180,28 @@ export default class Database {
         });
         client.close();
       });
-    })
+    });
   }
   removeAsync(collection, query) {
-    return new Promise( (resolve,reject) => {
-      MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
+    return new Promise((resolve, reject) => {
+      MongoClient.connect(url, { useNewUrlParser: true }, function(
+        err,
+        client
+      ) {
         if (err) reject(err);
         const db = client.db(DATABASE);
         db.collection(collection).remove(query);
         resolve();
         client.close();
       });
-    })
+    });
   }
   removeAllAsync(collection) {
-    return new Promise( (resolve,reject) => {
-      MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
+    return new Promise((resolve, reject) => {
+      MongoClient.connect(url, { useNewUrlParser: true }, function(
+        err,
+        client
+      ) {
         console.log("DELETE ALL");
         if (err) reject(err);
         const db = client.db(DATABASE);
@@ -205,11 +209,14 @@ export default class Database {
         resolve();
         client.close();
       });
-    })
+    });
   }
   updateAsync(collection, query, data) {
-    return new Promise( (resolve,reject) => {
-      MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
+    return new Promise((resolve, reject) => {
+      MongoClient.connect(url, { useNewUrlParser: true }, function(
+        err,
+        client
+      ) {
         if (err) throw err;
         const db = client.db(DATABASE);
 
@@ -222,12 +229,15 @@ export default class Database {
         });
         client.close();
       });
-    })
+    });
   }
 
   insertAsync(collection, data) {
-    return new Promise( (resolve,reject) => {
-      MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
+    return new Promise((resolve, reject) => {
+      MongoClient.connect(url, { useNewUrlParser: true }, function(
+        err,
+        client
+      ) {
         if (err) throw err;
         const db = client.db(DATABASE);
 
@@ -237,12 +247,15 @@ export default class Database {
         });
         client.close();
       });
-    })
+    });
   }
 
-  countPostsAsync(collection, query){
-    return new Promise( (resolve,reject) => {
-      MongoClient.connect(url, { useNewUrlParser: true }, function(err, client) {
+  countPostsAsync(collection, query) {
+    return new Promise((resolve, reject) => {
+      MongoClient.connect(url, { useNewUrlParser: true }, function(
+        err,
+        client
+      ) {
         if (err) reject(err);
         const db = client.db(DATABASE);
         db.collection(collection, (err, collection) => {
@@ -254,11 +267,10 @@ export default class Database {
         });
         client.close();
       });
-    })
+    });
   }
 
-  deletePost(...args){
-      throw new Error("not implemented")
+  deletePost(...args) {
+    throw new Error("not implemented");
   }
-
-};
+}
