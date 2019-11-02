@@ -1,8 +1,8 @@
-const bodyParser = require("body-parser"); // body-parser
+const bodyParser = require("body-parser");
 const express = require("express");
 const app = express();
 const f = require("util").format;
-const corser = require("corser"); //CORSをなんとかするやつ
+const corser = require("corser");
 
 import Database from "./src/database";
 const database = new Database();
