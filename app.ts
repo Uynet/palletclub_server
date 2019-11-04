@@ -178,9 +178,19 @@ app.post("/api/getLikeCount", (req, res) => {
 });
 
 //全ての投稿をget
-app.get("/api/getPosts", (req, res) => {
-  database.find(colpost, selectAll, c => res.send(c));
+//queryStringでqueryを指定することができる(param=valueのように)
+app.post("/api/getPosts", (req, res) => {
+  const queryString = req.body.queryString;
+  let query = {};
+  if (queryString !== "") {
+    const param = queryString.split("=")[0];
+    const value = queryString.split("=")[1];
+    query[param] = value;
+  }
+  console.log("query", query);
+  database.find(colpost, query, c => res.send(c));
 });
+
 app.post("/api/newPost", (req, res) => {
   res.setHeader("Content-Type", "text/plain");
   const data = req.body;
@@ -204,7 +214,6 @@ app.post("/api/getUserData", (req, res) => {
 
 //アクセストークンに対応するuserを返す
 app.post("/api/checkAccessToken", (req, res) => {
-  console.log(req.body.accessToken);
   database.find("users", { accessToken: req.body.accessToken }, c =>
     res.send(c)
   );
